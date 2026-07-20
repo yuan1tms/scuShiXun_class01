@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if user %}
+    <!-- 用户信息卡片 -->
+    <div class="card">
+        <h2>欢迎回来，{{ user["username"] }}！</h2>
+        <div class="user-info">
+            <div class="info-row"><span class="info-label">用户名：</span><span class="info-value">{{ user["username"] }}</span></div>
+            <div class="info-row"><span class="info-label">邮箱：</span><span class="info-value">{{ user["email"] }}</span></div>
+            <div class="info-row"><span class="info-label">手机：</span><span class="info-value">{{ user["phone"] }}</span></div>
+            <div class="info-row"><span class="info-label">角色：</span><span class="info-value">{{ user["role"] }}</span></div>
+            <div class="info-row"><span class="info-label">余额：</span><span class="info-value">{{ user["balance"] }}</span></div>
+        </div>
+        <a href="/logout" class="btn btn-danger">退出登录</a>
+    </div>
+
+    <!-- 搜索功能卡片 -->
+    <div class="card search-card">
+        <h2>用户搜索</h2>
+        <form method="get" action="/search" class="search-form">
+            <div class="search-group">
+                <input type="text" id="keyword" name="keyword" placeholder="搜索用户名或邮箱..." value="{{ search_keyword or "" }}" class="search-input">
+                <button type="submit" class="btn btn-search">搜索</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 搜索结果 -->
+    {% if search_keyword %}
+    <div class="card result-card">
+        <h3>搜索结果：<span class="keyword-highlight">{{ search_keyword }}</span></h3>
+        {% if search_results %}
+        <table class="result-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>用户名</th>
+                    <th>邮箱</th>
+                    <th>手机</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in search_results %}
+                <tr>
+                    <td>{{ row[0] }}</td>
+                    <td>{{ row[1] }}</td>
+                    <td>{{ row[3] }}</td>
+                    <td>{{ row[4] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p class="result-count">共找到 {{ search_results|length }} 条记录</p>
+        {% else %}
+        <p class="no-result">无搜索结果</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+{% else %}
+    <!-- 未登录状态 -->
+    <div class="card">
+        <h2>请先登录</h2>
+        <p>您尚未登录，请先登录系统以查看用户信息。</p>
+        <a href="/login" class="btn btn-primary">前往登录</a>
+    </div>
+{% endif %}
+
+{% endblock %}
