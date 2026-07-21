@@ -1,5 +1,6 @@
 import os
 import time
+import uuid
 import secrets
 import sqlite3
 from collections import defaultdict
@@ -249,8 +250,11 @@ def search():
 
 
 # ============================================================
-# 路由：上传头像（无文件类型检查漏洞）
+# 路由：上传头像
 # ============================================================
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "bmp", "webp"}
+
+
 @app.route("/upload", methods=["GET", "POST"])
 def upload():
     if "username" not in session:
@@ -263,12 +267,23 @@ def upload():
     if request.method == "POST":
         file = request.files.get("file")
         if file and file.filename:
-            filename = file.filename
-            try:
-                file.save(os.path.join("static/uploads", filename))
-                success = "上传成功"
-            except Exception as e:
-                error = f"上传失败: {str(e)}"
+            original = file.filename
+            # 获取文件扩展名（小写）
+            ext = original.rsplit(".", 1)[-1].lower() if "." in original else ""
+
+            # 检查扩展名是否在允许列表中
+            if ext not in ALLOWED_EXTENSIONS:
+                error = f"不支持的文件类型 (.{ext})，仅支持图片格式"
+            else:
+                # 生成唯一文件名防止覆盖
+                unique_name = f"{uuid.uuid4().hex}.{ext}"
+                save_path = os.path.join("static/uploads", unique_name)
+                try:
+                    file.save(save_path)
+                    success = "上传成功"
+                    filename = unique_name
+                except Exception as e:
+                    error = f"上传失败: {str(e)}"
         else:
             error = "请选择要上传的文件"
 
