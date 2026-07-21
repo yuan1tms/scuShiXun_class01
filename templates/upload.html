@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card upload-card">
+    <h2>上传头像</h2>
+
+    {% if error %}
+        <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+
+    {% if success and filename %}
+        <div class="alert alert-success">{{ success }}</div>
+        <div class="preview-box">
+            <img src="/static/uploads/{{ filename }}" alt="头像预览" class="avatar-preview">
+        </div>
+        <div class="file-info">
+            <p>文件路径：<code>/static/uploads/{{ filename }}</code></p>
+            <p>访问链接：<a href="/static/uploads/{{ filename }}" target="_blank" class="link">点此打开</a></p>
+        </div>
+        <div style="text-align:center; margin-top:20px;">
+            <a href="/upload" class="btn btn-primary" style="width:auto; display:inline-block; padding:10px 28px;">继续上传</a>
+            <a href="/" class="btn" style="width:auto; display:inline-block; padding:10px 28px; background:#95a5a6; color:#fff; border-radius:6px; margin-left:8px;">返回首页</a>
+        </div>
+    {% else %}
+    <form method="post" action="/upload" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="file">选择图片文件</label>
+            <input type="file" id="file" name="file" class="file-input" required>
+        </div>
+        <button type="submit" class="btn btn-primary">上传</button>
+    </form>
+    <p style="text-align:center; margin-top:16px; color:#888; font-size:13px;">
+        支持任意文件类型，最大 16MB
+    </p>
+    {% endif %}
+</div>
+{% endblock %}

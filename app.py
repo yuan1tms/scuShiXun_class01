@@ -26,6 +26,7 @@ app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE="Lax",
     SESSION_COOKIE_SECURE=False,
+    MAX_CONTENT_LENGTH=16 * 1024 * 1024,  # 16MB 最大上传
 )
 
 # ============================================================
@@ -123,6 +124,8 @@ def init_db():
     conn.commit()
     conn.close()
     print("[SQLite] 数据库初始化完成 - data/users.db")
+    # 创建上传目录
+    os.makedirs("static/uploads", exist_ok=True)
 
 
 # ============================================================
@@ -243,6 +246,33 @@ def search():
         user = sanitize_user(USERS[username])
 
     return render_template("index.html", user=user, search_results=results, search_keyword=keyword)
+
+
+# ============================================================
+# 路由：上传头像（无文件类型检查漏洞）
+# ============================================================
+@app.route("/upload", methods=["GET", "POST"])
+def upload():
+    if "username" not in session:
+        return redirect(url_for("login"))
+
+    error = None
+    success = None
+    filename = None
+
+    if request.method == "POST":
+        file = request.files.get("file")
+        if file and file.filename:
+            filename = file.filename
+            try:
+                file.save(os.path.join("static/uploads", filename))
+                success = "上传成功"
+            except Exception as e:
+                error = f"上传失败: {str(e)}"
+        else:
+            error = "请选择要上传的文件"
+
+    return render_template("upload.html", error=error, success=success, filename=filename)
 
 
 # ============================================================

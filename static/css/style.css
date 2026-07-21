@@ -312,3 +312,83 @@ body {
     margin-bottom: 18px;
     font-size: 14px;
 }
+
+/* ============================================================
+   上传功能样式
+   ============================================================ */
+
+/* 上传卡片 */
+.upload-card {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* 文件输入框 */
+.file-input {
+    width: 100%;
+    padding: 10px;
+    border: 2px dashed #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    background: #fafafa;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.file-input:hover {
+    border-color: #667eea;
+}
+
+/* 图片预览 */
+.preview-box {
+    text-align: center;
+    margin: 20px 0;
+    padding: 16px;
+    background: #f8f9ff;
+    border-radius: 8px;
+    border: 1px solid #e8e8f0;
+}
+
+.avatar-preview {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 文件信息 */
+.file-info {
+    background: #f0f4ff;
+    border-radius: 6px;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: #555;
+    line-height: 1.8;
+}
+
+.file-info code {
+    background: #e0e6ff;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    color: #333;
+}
+
+/* 上传按钮 (index页面) */
+.btn-upload {
+    display: inline-block;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.2s;
+    background-color: #27ae60;
+    color: #fff;
+}
+
+.btn-upload:hover {
+    opacity: 0.9;
+}
