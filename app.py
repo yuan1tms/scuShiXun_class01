@@ -296,65 +296,87 @@ def upload():
 
 
 # ============================================================
-# 路由：个人中心（可通过 URL 参数查看任意用户）
+# 路由：个人中心（仅查看自己的资料）
 # ============================================================
 @app.route("/profile", methods=["GET"])
 def profile():
     if "username" not in session:
         return redirect(url_for("login"))
 
-    user_id = request.args.get("user_id", "")
     profile_data = None
     error = None
 
-    if user_id:
-        try:
-            conn = sqlite3.connect("data/users.db")
-            c = conn.cursor()
-            query = f"SELECT id, username, email, phone, balance FROM users WHERE id = {user_id}"
-            print(f"[SQL] 查询个人资料: {query}")
-            c.execute(query)
-            row = c.fetchone()
-            conn.close()
-            if row:
-                profile_data = {
-                    "id": row[0],
-                    "username": row[1],
-                    "email": row[2],
-                    "phone": row[3],
-                    "balance": row[4],
-                }
-            else:
-                error = "用户不存在"
-        except Exception as e:
-            error = f"查询失败: {str(e)}"
+    try:
+        conn = sqlite3.connect("data/users.db")
+        c = conn.cursor()
+        query = "SELECT id, username, email, phone, balance FROM users WHERE username = ?"
+        print(f"[SQL] 查询个人资料: {query} 参数: username={session['username']}")
+        c.execute(query, (session["username"],))
+        row = c.fetchone()
+        conn.close()
+        if row:
+            profile_data = {
+                "id": row[0],
+                "username": row[1],
+                "email": row[2],
+                "phone": row[3],
+                "balance": row[4],
+            }
+        else:
+            error = "用户不存在"
+    except Exception as e:
+        error = f"查询失败: {str(e)}"
 
-    return render_template("profile.html", profile=profile_data, error=error)
+    return render_template("profile.html", profile=profile_data, error=error,
+                           csrf_token=generate_csrf_token())
 
 
 # ============================================================
-# 路由：充值（直接修改余额，无金额校验）
+# 路由：充值（仅限给自己充值，有金额校验 + CSRF）
 # ============================================================
 @app.route("/recharge", methods=["POST"])
 def recharge():
     if "username" not in session:
         return redirect(url_for("login"))
 
+    # CSRF 校验
+    csrf_token = request.form.get("_csrf_token", "")
+    if not validate_csrf_token(csrf_token):
+        abort(403, description="CSRF 验证失败，请刷新页面重试。")
+
     user_id = request.form.get("user_id", "")
-    amount = request.form.get("amount", "0")
+    amount_str = request.form.get("amount", "0")
+
+    try:
+        amount = float(amount_str)
+    except ValueError:
+        amount = 0
+
+    # 校验：金额必须为正数且不超过上限
+    if amount <= 0:
+        return redirect("/profile?error=金额必须大于零")
+    if amount > 100000:
+        return redirect("/profile?error=单次充值金额不得超过 100,000 元")
 
     try:
         conn = sqlite3.connect("data/users.db")
         c = conn.cursor()
-        query = f"UPDATE users SET balance = balance + {amount} WHERE id = {user_id}"
-        print(f"[SQL] 充值查询: {query}")
-        c.execute(query)
+        # 先查询 user_id 是否属于当前登录用户
+        c.execute("SELECT username FROM users WHERE id = ?", (user_id,))
+        row = c.fetchone()
+        if not row or row[0] != session["username"]:
+            conn.close()
+            return redirect("/profile?error=无权操作该账户")
+
+        query = "UPDATE users SET balance = balance + ? WHERE id = ?"
+        print(f"[SQL] 充值查询: {query} 参数: amount={amount}, user_id={user_id}")
+        c.execute(query, (amount, user_id))
         conn.commit()
         conn.close()
     except Exception as e:
         print(f"[SQL] 充值错误: {str(e)}")
 
-    return redirect(f"/profile?user_id={user_id}")
+    return redirect("/profile")
 
 
 # ============================================================
