@@ -12,7 +12,8 @@
             <div class="info-row"><span class="info-label">角色：</span><span class="info-value">{{ user["role"] }}</span></div>
             <div class="info-row"><span class="info-label">余额：</span><span class="info-value">{{ user["balance"] }}</span></div>
         </div>
-        <div style="margin-top:16px; display:flex; gap:10px;">
+        <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+            <a href="/profile?user_id=1" class="btn btn-profile">个人中心</a>
             <a href="/upload" class="btn btn-upload">上传头像</a>
             <a href="/logout" class="btn btn-danger">退出登录</a>
         </div>

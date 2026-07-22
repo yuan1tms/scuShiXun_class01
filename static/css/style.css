@@ -392,3 +392,40 @@ body {
 .btn-upload:hover {
     opacity: 0.9;
 }
+
+/* ============================================================
+   个人中心样式
+   ============================================================ */
+.btn-profile {
+    display: inline-block;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.2s;
+    background-color: #e67e22;
+    color: #fff;
+}
+
+.btn-profile:hover {
+    opacity: 0.9;
+}
+
+/* 充值输入框 */
+input[type="number"] {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+input[type="number"]:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+}
