@@ -393,6 +393,8 @@ def logout():
 # ============================================================
 # 路由：动态页面加载（路径遍历漏洞 — 直接拼接）
 # ============================================================
+# 路由：动态页面加载
+# ============================================================
 @app.route("/page", methods=["GET"])
 def dynamic_page():
     name = request.args.get("name", "")
@@ -402,14 +404,17 @@ def dynamic_page():
 
     page_content = None
 
-    # 尝试直接读取
-    filepath = os.path.join("pages", name)
-    if os.path.exists(filepath):
-        with open(filepath, "r", encoding="utf-8") as f:
-            page_content = f.read()
+    # 安全检查：移除路径遍历字符
+    name = name.replace("..", "").replace("/", "").replace("\\", "")
+    # 只允许 .html 文件
+    if not name.endswith(".html"):
+        name = name + ".html"
+    # 限制只读取 pages/ 目录下的文件
+    safe_name = "".join(c for c in name if c.isalnum() or c in "._-")
+    if not safe_name:
+        page_content = "文件名不合法"
     else:
-        # 尝试加上 .html 后缀
-        filepath = os.path.join("pages", name + ".html")
+        filepath = os.path.join("pages", safe_name)
         if os.path.exists(filepath):
             with open(filepath, "r", encoding="utf-8") as f:
                 page_content = f.read()
