@@ -429,3 +429,68 @@ input[type="number"]:focus {
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
 }
+
+/* ============================================================
+   动态页面加载样式
+   ============================================================ */
+.btn-help {
+    display: inline-block;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.2s;
+    background-color: #3498db;
+    color: #fff;
+}
+
+.btn-help:hover {
+    opacity: 0.9;
+}
+
+.page-card {
+    margin-top: 0;
+}
+
+.page-card h3 {
+    font-size: 20px;
+    color: #333;
+    margin-bottom: 16px;
+}
+
+.help-section {
+    margin-bottom: 20px;
+}
+
+.help-section h4 {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #eee;
+}
+
+.help-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.help-section ul li {
+    padding: 8px 0;
+    font-size: 14px;
+    color: #444;
+    line-height: 1.6;
+}
+
+.help-section ul li strong {
+    color: #333;
+}
+
+.help-section p {
+    font-size: 14px;
+    color: #444;
+    padding: 4px 0;
+}

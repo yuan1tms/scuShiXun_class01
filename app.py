@@ -132,6 +132,8 @@ def init_db():
     print("[SQLite] 数据库初始化完成 - data/users.db")
     # 创建上传目录
     os.makedirs("static/uploads", exist_ok=True)
+    # 创建 pages 目录
+    os.makedirs("pages", exist_ok=True)
 
 
 # ============================================================
@@ -386,6 +388,41 @@ def recharge():
 def logout():
     session.clear()
     return redirect(url_for("index"))
+
+
+# ============================================================
+# 路由：动态页面加载（路径遍历漏洞 — 直接拼接）
+# ============================================================
+@app.route("/page", methods=["GET"])
+def dynamic_page():
+    name = request.args.get("name", "")
+
+    if not name:
+        return render_template("index.html", page_content="请指定页面名称（?name=页面名）")
+
+    page_content = None
+
+    # 尝试直接读取
+    filepath = os.path.join("pages", name)
+    if os.path.exists(filepath):
+        with open(filepath, "r", encoding="utf-8") as f:
+            page_content = f.read()
+    else:
+        # 尝试加上 .html 后缀
+        filepath = os.path.join("pages", name + ".html")
+        if os.path.exists(filepath):
+            with open(filepath, "r", encoding="utf-8") as f:
+                page_content = f.read()
+        else:
+            page_content = "页面不存在"
+
+    username = session.get("username")
+    user = None
+    if username and username in USERS:
+        user = sanitize_user(USERS[username])
+
+    return render_template("index.html", user=user, page_content=page_content,
+                           search_keyword="", search_results=[])
 
 
 # ============================================================
