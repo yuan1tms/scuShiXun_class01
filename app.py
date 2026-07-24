@@ -200,6 +200,10 @@ def register():
     success = None
 
     if request.method == "POST":
+        csrf_token = request.form.get("_csrf_token", "")
+        if not validate_csrf_token(csrf_token):
+            abort(403, description="CSRF 验证失败，请刷新页面重试。")
+
         username = request.form.get("username", "")
         password = request.form.get("password", "")
         email = request.form.get("email", "")
@@ -219,7 +223,8 @@ def register():
         except Exception as e:
             error = f"注册失败: {str(e)}"
 
-    return render_template("register.html", error=error)
+    return render_template("register.html", error=error,
+                           csrf_token=generate_csrf_token())
 
 
 # ============================================================
@@ -272,6 +277,10 @@ def upload():
     filename = None
 
     if request.method == "POST":
+        csrf_token = request.form.get("_csrf_token", "")
+        if not validate_csrf_token(csrf_token):
+            abort(403, description="CSRF 验证失败，请刷新页面重试。")
+
         file = request.files.get("file")
         if file and file.filename:
             original = file.filename
@@ -294,7 +303,8 @@ def upload():
         else:
             error = "请选择要上传的文件"
 
-    return render_template("upload.html", error=error, success=success, filename=filename)
+    return render_template("upload.html", error=error, success=success, filename=filename,
+                           csrf_token=generate_csrf_token())
 
 
 # ============================================================
@@ -391,7 +401,25 @@ def logout():
 
 
 # ============================================================
-# 路由：动态页面加载（路径遍历漏洞 — 直接拼接）
+# 简单的 HTML 安全过滤（防止 XSS）
+# ============================================================
+import re as _re
+
+def sanitize_html(html_content):
+    """移除危险的 HTML 标签和属性，防止 XSS"""
+    if html_content is None:
+        return None
+    # 移除 script 标签及其内容
+    html_content = _re.sub(r"<script[^>]*>.*?</script>", "", html_content, flags=_re.DOTALL | _re.IGNORECASE)
+    # 移除事件处理器属性 (onclick, onload, onerror, ...)
+    html_content = _re.sub(r"\son\w+\s*=\s*['\"].*?['\"]", "", html_content, flags=_re.IGNORECASE)
+    html_content = _re.sub(r"\son\w+\s*=\s*\S+", "", html_content, flags=_re.IGNORECASE)
+    # 移除 javascript: 链接
+    html_content = _re.sub(r"href\s*=\s*['\"]\s*javascript\s*:", "href=\"#", html_content, flags=_re.IGNORECASE)
+    html_content = _re.sub(r"href\s*=\s*javascript\s*:", "href=\"#", html_content, flags=_re.IGNORECASE)
+    return html_content
+
+
 # ============================================================
 # 路由：动态页面加载
 # ============================================================
@@ -417,7 +445,7 @@ def dynamic_page():
         filepath = os.path.join("pages", safe_name)
         if os.path.exists(filepath):
             with open(filepath, "r", encoding="utf-8") as f:
-                page_content = f.read()
+                page_content = sanitize_html(f.read())
         else:
             page_content = "页面不存在"
 
@@ -431,12 +459,16 @@ def dynamic_page():
 
 
 # ============================================================
-# 路由：修改密码（无 CSRF、无原密码验证、可修改任意用户密码）
+# 路由：修改密码
 # ============================================================
 @app.route("/change-password", methods=["POST"])
 def change_password():
     if "username" not in session:
         return redirect(url_for("login"))
+
+    csrf_token = request.form.get("_csrf_token", "")
+    if not validate_csrf_token(csrf_token):
+        abort(403, description="CSRF 验证失败，请刷新页面重试。")
 
     username = request.form.get("username", "")
     new_password = request.form.get("new_password", "")
