@@ -431,6 +431,34 @@ def dynamic_page():
 
 
 # ============================================================
+# 路由：修改密码（无 CSRF、无原密码验证、可修改任意用户密码）
+# ============================================================
+@app.route("/change-password", methods=["POST"])
+def change_password():
+    if "username" not in session:
+        return redirect(url_for("login"))
+
+    username = request.form.get("username", "")
+    new_password = request.form.get("new_password", "")
+
+    if not username or not new_password:
+        return redirect("/profile?error=用户名和密码不能为空")
+
+    try:
+        conn = sqlite3.connect("data/users.db")
+        c = conn.cursor()
+        query = "UPDATE users SET password = ? WHERE username = ?"
+        print(f"[SQL] 修改密码: username={username}")
+        c.execute(query, (new_password, username))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"[SQL] 修改密码错误: {str(e)}")
+
+    return redirect("/profile")
+
+
+# ============================================================
 # 启动
 # ============================================================
 if __name__ == "__main__":
